@@ -80,6 +80,12 @@
     </div>
 
     <script>
+      console = console || {
+          log: function() {},
+          debug: function() {},
+          info: function() {},
+          error: function() {}
+      }
       function list() {
           return $('#streams img').map(function() {
               return $(this).attr('src');
@@ -95,6 +101,18 @@
               });
               return;
           }
+              // Saves url to streams list cookie
+              // TODO: Refactor: there is the "session" object that handles
+              // view parameters storage and retrieval
+              // TODO: simply store list().append(url) ?
+              //       and make list() return cookie contents ?
+              console.debug('adding URL to streams list');
+              var sep = ' ';
+              var streams = $.cookie('streams');
+              streams = streams ? streams.split(sep) : [];
+              streams.unshift(url);
+              console.debug('streams list updated to', streams);
+              $.cookie('streams', streams.join(sep), {expires:365});
           // Creates and appends <img> tag
           console.debug('creating img DOM');
           var a = $('<a/>', {
@@ -111,20 +129,21 @@
                   // high-level layout related stuff (such as sizing, dragging, etc.)
                   //$('.gridly').gridly('layout');
                   $('#streams').shapeshift();
-                  // Saves url to streams list cookie
-                  // TODO: Refactor: there is the "session" object that handles
-                  // view parameters storage and retrieval
-                  console.debug('adding URL to streams list');
-                  var sep = ' ';
-                  var streams = $.cookie('streams');
-                  streams = streams ? streams.split(sep) : [];
-                  streams.unshift(url);
-                  console.debug('streams list updated to', streams);
-                  $.cookie('streams', streams.join(sep), {expires:365});
+                  // Restores resizable
+                  /* Buggy with shapeshift
+                  $('#streams img').resizable({
+                      //alsoResize: '#streams img',
+                      //aspectRatio: 16/9,
+                      stop: function() {
+                          $('#streams').shapeshift();
+                      }
+                  });
+                  */
               },
               error: function() {
                   console.error('failed loading', this.src);
                   // Notifies user
+                  // TODO: Add a 'remove (stream)' link in message
                   $.bootstrapGrowl("We cannot load this stream", {
                       type: 'error',
                       align: 'center',
@@ -189,6 +208,7 @@
 
           /*
           // Setups resizable streams
+          // FIXME: Not needed because called on every stream addition
           $('#streams img').resizable({
               //alsoResize: '#streams img',
               //aspectRatio: 16/9;
