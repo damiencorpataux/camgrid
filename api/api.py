@@ -1,6 +1,6 @@
 import bottle
 from bottle import Bottle, run, debug
-from bottle import route, response, abort, error
+from bottle import route, request, response, abort, error
 from bottle import view, template
 from bottle import static_file
 
@@ -11,6 +11,10 @@ from glob import glob
 # FIXME: Create a dedicated bottle app named 'api'
 #        and mount it in the 'viewer' app
 #        http://stackoverflow.com/questions/11180806/
+
+# FIXME: API response must be streamed (yielding results)
+#        cf. stream() test
+
 app = Bottle()
 
 c = config = {
@@ -34,6 +38,35 @@ def stream():
 @view('app')
 def home():
     return
+
+@app.route('/timeline')
+@view('timeline')
+def events():
+    return {
+        'calendarurl': app.get_url('/calendar')
+    }
+
+# NOTE: This data restructuration could/should
+#       be done on the client side (eg. fullcalendar.events as function)
+#       and should support json streaming
+@app.route('/calendar')
+def get_calendar():
+    start = request.query.start or None
+    end = request.query.end or None
+    events = get_events()['events']
+    list = [{
+        'id': e['file'],
+        'file': e['file'],
+        'title': '[%s] %s (%ss)'
+            % (e['event'], e['text'], e['meta']['duration']),
+        'preview': e['preview'],
+        'play': e['play'],
+        'start': e['timestamp'],
+        #'end': int(e['timestamp']) + int(e['meta']['duration']),
+        'allDay': False
+    } for e in events];
+    import json
+    return json.dumps(list)
 
 @app.route('/static/<filename:path>')
 def send_static(filename):
@@ -83,6 +116,8 @@ def get_events():
             'date': time.ctime(timestamp),
             'event': i['v'],
             'thread': i['t'],
+            'preview': app.get_url('/preview/<file:path>', file=file),
+            'play': app.get_url('/play/<file:path>', file=file),
             'meta': get_meta(file),
             #'info': i,
         })
@@ -98,13 +133,11 @@ def get_meta(file):
     if (not os.path.isfile(file)): abort(404, 'File %s does not exist' % file)
     cmd = 'avprobe "%s" 2>&1' % (file)
     output = subprocess.check_output(cmd, shell=True)
-    print output
     m = re.findall('encoder.*: (.*?)\n.*Duration: (.*?),.*bitrate: (.*)\n.*Video: (.*?), (.*?), (.*?)x(.*?), (.*?) fps', output, re.MULTILINE)
     if not m: raise Exception('File metadata parsing failed (%s)' % file)
     encoder, duration, bitrate, encoding, palette, width, height, fps = m.pop()
     h, m, s, c = re.findall('(\d{2}):(\d{2}):(\d{2})\.(\d{2})', duration).pop()
     duration = int(h)*3600 + int(m)*60 + int(s) + float(c)/100
-    preview = app.get_url('/preview/<file:path>', file=file)
     return {
         'duration': duration,
         'resolution': '%sx%s' % (width, height),
@@ -116,7 +149,6 @@ def get_meta(file):
         'bitrate': bitrate,
         'palette': palette,
         'raw': output,
-        'preview': preview
     }
 
 @app.route('/preview/<file:path>')
@@ -129,6 +161,15 @@ def get_preview(file, time=0, size='160x120'):
     response.content_type = 'image/jpeg'
     return subprocess.check_output(cmd, shell=True)
 
+# FIXME: Use a flash play in client side?
+@app.route('/play/<file:path>')
+def get_play(file):
+    response.content_type = 'application/octet-stream'
+    file = open(file, 'rb')
+    while 1:
+        chunk = file.read(4096)
+        if not chunk: break
+        yield chunk
 
 def parse_motion_conf():
     match = re.compile("^(target_dir|movie_filename|jpeg_filename) (.*)$").match
