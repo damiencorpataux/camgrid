@@ -1,6 +1,11 @@
-from bottle import Bottle, run, response, abort
-from glob import glob
+import bottle
+from bottle import Bottle, run, debug
+from bottle import route, response, abort, error
+from bottle import view, template
+from bottle import static_file
+
 import os, re, subprocess
+from glob import glob
 
 app = Bottle()
 
@@ -11,6 +16,14 @@ c = config = {
 }
 
 @app.route('/')
+@view('app')
+def home():
+    return {} 
+
+@app.route('/static/<filename:path>')
+def send_static(filename):
+    return static_file(filename, root='static')
+
 @app.route('/config')
 def get_config():
     return c

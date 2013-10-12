@@ -218,7 +218,7 @@
     </script>
 
     <!-- Lighter -->
-    <script src="js/jquery.lighter.js" type="text/javascript"></script>
+    <script src="/static/js/jquery.lighter.js" type="text/javascript"></script>
     <link href="http://ksylvest.github.io/jquery-lighter/stylesheets/jquery.lighter.css" rel="stylesheet" type="text/css" />
     <!-- BootstrapGrowl -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-growl/1.0.0/jquery.bootstrap-growl.min.js" type="text/javascript"></script>
