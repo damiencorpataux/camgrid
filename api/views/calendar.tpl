@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Camgrid &middot; Prototype</title>
+    <title>Camgrid &middot; Calendar</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link href="http://code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" rel="stylesheet">
@@ -72,7 +72,6 @@
       <script>
         // Actual calendar init
         $(document).ready(function() {
-            console.log('calendar init');
             init_calendar({
                 editable: false,
                 events: function(start, end, callback) {
@@ -95,14 +94,12 @@
                                 allDay: false
                             }
                         });
-                        console.log(events);
                         callback(events)
                     });
                 },
                 eventClick: function(event, jsEvent){
                     // Display event detail in UI modal box
                     //$("#appointment-form").dialog("open");
-                    console.log(event);
                     $.colorbox({
                         width: '80%',
                         html:'Preview<img src="'+event.preview+'"/>'

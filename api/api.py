@@ -22,6 +22,8 @@ c = config = {
     # These options will be overriden by setup() if they are empty 
     'target_dir': None,
     'movie_filename': None,
+    # FIXME: This is to match my motion older file naming convention
+    'movie_filename': 'events/motion/%Y-%m/%Y-%m-%d/%Y-%m-%d %H-%M-%S - %C',
 }
 
 # Testing json streaming
