@@ -15,19 +15,52 @@ c = config = {
 def get_config():
     return c
 
-@app.route('/events')
-def get_events():
-    path = c['motion']['target_dir']+'/*/*.avi'
-    files = glob(path)
+@app.route('/files')
+@app.route('/files/<filter>')
+def get_files(filter='.*(avi|mpg|jpg)$'):
+    #path = c['motion']['target_dir']+'/*/*.avi'
+    #files = glob(path)
+    path = c['motion']['target_dir']
+    cmd = 'find %s -regextype posix-extended -regex "%s"' % (path, filter)
+    files = subprocess.check_output(cmd, shell=True).split('\n')
     return {
         'path': path,
+        'filter': filter,
         'count': len(files),
         'files': files,
     }
 
-@app.route('/events/meta/<file:path>')
-def get_meta():
-    return {}
+@app.route('/events')
+def get_events():
+    pattern = c['motion']['movie_filename']
+    files = []
+    return pattern
+
+@app.route('/meta/<file:path>')
+def get_meta(file):
+    file = '/' + file
+    if (not os.path.isfile(file)): abort(404, 'File %s does not exist' % file)
+    cmd = 'avprobe "%s" 2>&1' % (file)
+    output = subprocess.check_output(cmd, shell=True)
+    m = re.findall('encoder.*: (.*?)\n.*Duration: (.*?),.*bitrate: (.*)\n.*Video: (.*?), (.*?), (.*)x(.*?) .*DAR (.*?)], (.*?) fps', output, re.MULTILINE)
+    encoder, duration, bitrate, encoding, palette, width, height, aspect, fps = m.pop()
+    h, m, s, c = re.findall('(\d{2}):(\d{2}):(\d{2})\.(\d{2})', duration).pop()
+    duration = int(h)*3600 + int(m)*60 + int(s) + float(c)/100
+    preview = app.get_url('/preview/<file:path>', file=file)
+    return {
+        'duration': duration,
+        'resolution': '%sx%s' % (width, height),
+        'width': width,
+        'height': height,
+        'fps': fps,
+        'aspect': aspect,
+        'encoding': encoding,
+        'encoder': encoder,
+        'bitrate': bitrate,
+        'palette': palette,
+        'raw': output,
+        'preview': preview
+    }
 
 @app.route('/preview/<file:path>')
 @app.route('/preview/<file:path>/<time:int>')
@@ -35,9 +68,10 @@ def get_meta():
 def get_preview(file, time=0, size='160x120'):
     file = '/' + file
     if (not os.path.isfile(file)): abort(404, 'File %s does not exist' % file)
-    cmd = 'ffmpeg -i "%s" -vframes 1 -an -f image2 -s %s -ss %s - 2>/dev/null' % (file, size, time)
+    cmd = 'avconv -loglevel error -i "%s" -vframes 1 -an -f image2 -s %s -ss %s -' % (file, size, time)
     response.content_type = 'image/jpeg'
     return subprocess.check_output(cmd, shell=True)
+
 
 def parse_motion_conf():
     match = re.compile("^(target_dir|movie_filename|jpeg_filename) (.*)$").match
