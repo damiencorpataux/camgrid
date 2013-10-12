@@ -18,9 +18,10 @@ from glob import glob
 app = Bottle()
 
 c = config = {
-    'filespath': '/home/damien/motion-storage',
     'motionconf': '/etc/motion/motion.conf',
-    'motion': {}
+    # These options will be overriden by setup() if they are empty 
+    'target_dir': None,
+    'movie_filename': None,
 }
 
 # Testing json streaming
@@ -58,9 +59,9 @@ def get_config():
 @app.route('/files')
 @app.route('/files/<filter>')
 def get_files(filter='.*(avi|mpg|jpg)$'):
-    #path = c['motion']['target_dir']+'/*/*.avi'
+    #path = c['target_dir']+'/*/*.avi'
     #files = glob(path)
-    path = c['motion']['target_dir']
+    path = c['target_dir']
     cmd = 'find %s -regextype posix-extended -regex "%s"' % (path, filter)
     files = subprocess.check_output(cmd, shell=True).split('\n')
     return {
@@ -73,9 +74,9 @@ def get_files(filter='.*(avi|mpg|jpg)$'):
 @app.route('/events')
 def get_events():
     # Globs files matching filter (filter is TODO)
-    motion_pattern = c['motion']['movie_filename']
+    motion_pattern = c['movie_filename']
     pattern = re.sub('%.', '*', motion_pattern)
-    path = c['motion']['target_dir'] + '/' + pattern + '*'
+    path = c['target_dir'] + '/' + pattern + '*'
     files = glob(path)
     # Extracts info from filenames
     keys = re.findall('%(.)', motion_pattern)
@@ -150,14 +151,18 @@ def get_play(file):
         if not chunk: break
         yield chunk
 
-def parse_motion_conf():
-    match = re.compile("^(target_dir|movie_filename|jpeg_filename) (.*)$").match
-    with open(c['motionconf'], 'r') as file:
-        conf = {m.group(1):m.group(2) for m in [match(l) for l in file] if m}
-    c['motion'] = conf
-
-
-parse_motion_conf()
+def setup():
+    def motion_conf():
+        match = re.compile(
+            "^(target_dir|movie_filename) (.*)$"
+        ).match
+        with open(c['motionconf'], 'r') as file:
+            return {m.group(1):m.group(2) for m
+                in [match(l) for l in file] if m}
+    # Overrides empty app directives with motion config
+    for k,v in motion_conf().iteritems():
+        if not c[k]: c[k] = v
 
 # Server instance
+setup()
 run(app, host='0.0.0.0', port=8000, reloader=True)
