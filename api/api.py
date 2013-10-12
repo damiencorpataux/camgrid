@@ -84,6 +84,7 @@ def get_events():
     r = re.compile(pattern).findall
     data = []
     for file in files:
+        # Creates a dict mapping motion-pattern => matched value
         i = dict(zip(keys, r(file).pop()))
         timestamp = time.mktime(time.strptime(
             '%(Y)s-%(m)s-%(d)s %(H)s:%(M)s:%(S)s' % i,
@@ -91,11 +92,11 @@ def get_events():
         ))
         data.append({
             'file': file,
-            'text': i['C'],
+            'text': i.get('C'),
             'timestamp': timestamp,
             'date': time.ctime(timestamp),
-            'event': i['v'],
-            'thread': i['t'],
+            'event': i.get('v'),
+            'thread': i.get('t'),
             'preview': app.get_url('/preview/<file:path>', file=file),
             'play': app.get_url('/play/<file:path>', file=file),
             #'meta': get_meta(file),
