@@ -56,9 +56,9 @@
 
       <div class="masthead">
         <ul class="nav nav-pills pull-right">
-          <li class="active"><a href="/">Home</a></li>
-          <li><a href="?login">Login</a></li>
-          <li><a href="?help">Aide</a></li>
+          <li class="active"><a href="/">Live</a></li>
+          <li><a href="/calendar">Calendar</a></li>
+          <li><a href="/timeline">Timeline</a></li>
         </ul>
         <h2>
           Camgrid

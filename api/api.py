@@ -35,38 +35,17 @@ def stream():
         time.sleep(1)
 
 @app.route('/')
-@view('app')
+@app.route('/live')
+@view('live')
 def home():
     return
 
-@app.route('/timeline')
-@view('timeline')
+@app.route('/calendar')
+@view('calendar')
 def events():
     return {
-        'calendarurl': app.get_url('/calendar')
+        'calendarurl': app.get_url('/events')
     }
-
-# NOTE: This data restructuration could/should
-#       be done on the client side (eg. fullcalendar.events as function)
-#       and should support json streaming
-@app.route('/calendar')
-def get_calendar():
-    start = request.query.start or None
-    end = request.query.end or None
-    events = get_events()['events']
-    list = [{
-        'id': e['file'],
-        'file': e['file'],
-        'title': '[%s] %s (%ss)'
-            % (e['event'], e['text'], e['meta']['duration']),
-        'preview': e['preview'],
-        'play': e['play'],
-        'start': e['timestamp'],
-        #'end': int(e['timestamp']) + int(e['meta']['duration']),
-        'allDay': False
-    } for e in events];
-    import json
-    return json.dumps(list)
 
 @app.route('/static/<filename:path>')
 def send_static(filename):
@@ -118,7 +97,7 @@ def get_events():
             'thread': i['t'],
             'preview': app.get_url('/preview/<file:path>', file=file),
             'play': app.get_url('/play/<file:path>', file=file),
-            'meta': get_meta(file),
+            #'meta': get_meta(file),
             #'info': i,
         })
     # Returns data structure

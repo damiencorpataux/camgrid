@@ -58,9 +58,7 @@
 
       <div class="masthead">
         <ul class="nav nav-pills pull-right">
-          <li class="active"><a href="/">Home</a></li>
-          <li><a href="?login">Login</a></li>
-          <li><a href="?help">Aide</a></li>
+          <li class="active"><a href="/">Live</a></li>
         </ul>
         <h2>
           Camgrid
@@ -77,9 +75,22 @@
             console.log('calendar init');
             init_calendar({
                 editable: false,
-                events: {
-                    url: '{{calendarurl}}',
-                    cache: true
+                events: function(start, end, callback) {
+                    $.getJSON('{{calendarurl}}', {
+                        start: Math.round(start.getTime() / 1000),
+                        end: Math.round(end.getTime() / 1000)
+                    }).done(function(json) {
+                        var events = $.map(json.events, function(e) {
+                            return {
+                                id: e.file,
+                                title: [e.text].join(''),
+                                start: e.timestamp,
+                                allDay: false
+                            }
+                        });
+                        console.log(events);
+                        callback(events)
+                    });
                 },
                 eventClick: function(event, jsEvent){
                     // Display event detail in UI modal box
