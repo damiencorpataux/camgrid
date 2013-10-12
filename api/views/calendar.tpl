@@ -80,11 +80,18 @@
                         start: Math.round(start.getTime() / 1000),
                         end: Math.round(end.getTime() / 1000)
                     }).done(function(json) {
+                        var colors = {
+                            frontdoor: '#fd0',
+                            sideway: '#cff',
+                            backyard: '#cf0',
+                            living: '#ddd',
+                        }
                         var events = $.map(json.events, function(e) {
                             return {
                                 id: e.file,
-                                title: [e.text].join(''),
+                                title: e.text,
                                 start: e.timestamp,
+                                backgroundColor: colors[e.text.toLowerCase()],
                                 allDay: false
                             }
                         });
