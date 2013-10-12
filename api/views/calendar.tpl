@@ -123,7 +123,7 @@
                     agenda: 'H:mm{ - H:mm}',
                     '': 'H(:mm)'
                 },
-                //allDaySlot: false,
+                allDaySlot: false,
                 //slotEventOverlap: false,
                 defaultEventMinutes: 15,
                 header: {
