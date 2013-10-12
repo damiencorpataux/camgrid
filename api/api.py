@@ -4,7 +4,8 @@ from bottle import route, response, abort, error
 from bottle import view, template
 from bottle import static_file
 
-import os, re, subprocess
+import os, subprocess
+import re, time
 from glob import glob
 
 app = Bottle()
@@ -45,18 +46,48 @@ def get_files(filter='.*(avi|mpg|jpg)$'):
 
 @app.route('/events')
 def get_events():
-    pattern = c['motion']['movie_filename']
-    files = []
-    return pattern
+    # Globs files matching filter (filter is TODO)
+    motion_pattern = c['motion']['movie_filename']
+    pattern = re.sub('%.', '*', motion_pattern)
+    path = c['motion']['target_dir'] + '/' + pattern + '*'
+    files = glob(path)
+    # Extracts info from filenames
+    keys = re.findall('%(.)', motion_pattern)
+    pattern = re.sub('\\\%.', '(.*?)', re.escape(motion_pattern))
+    r = re.compile(pattern).findall
+    data = []
+    for file in files:
+        i = dict(zip(keys, r(file).pop()))
+        timestamp = time.mktime(time.strptime(
+            '%(Y)s-%(m)s-%(d)s %(H)s:%(M)s:%(S)s' % i,
+            "%Y-%m-%d %H:%M:%S"
+        ))
+        data.append({
+            'file': file,
+            'text': i['C'],
+            'timestamp': timestamp,
+            'date': time.ctime(timestamp),
+            'event': i['v'],
+            'thread': i['t'],
+            'meta': get_meta(file),
+            #'info': i,
+        })
+    # Returns data structure
+    return {
+        'count': len(files),
+        'events': data
+    }
 
 @app.route('/meta/<file:path>')
 def get_meta(file):
-    file = '/' + file
+    file = os.path.join('/', file)
     if (not os.path.isfile(file)): abort(404, 'File %s does not exist' % file)
     cmd = 'avprobe "%s" 2>&1' % (file)
     output = subprocess.check_output(cmd, shell=True)
-    m = re.findall('encoder.*: (.*?)\n.*Duration: (.*?),.*bitrate: (.*)\n.*Video: (.*?), (.*?), (.*)x(.*?) .*DAR (.*?)], (.*?) fps', output, re.MULTILINE)
-    encoder, duration, bitrate, encoding, palette, width, height, aspect, fps = m.pop()
+    print output
+    m = re.findall('encoder.*: (.*?)\n.*Duration: (.*?),.*bitrate: (.*)\n.*Video: (.*?), (.*?), (.*?)x(.*?).+, (.*?) fps', output, re.MULTILINE)
+    if not m: raise Exception('File metadata parsing failed (%s)' % file)
+    encoder, duration, bitrate, encoding, palette, width, height, fps = m.pop()
     h, m, s, c = re.findall('(\d{2}):(\d{2}):(\d{2})\.(\d{2})', duration).pop()
     duration = int(h)*3600 + int(m)*60 + int(s) + float(c)/100
     preview = app.get_url('/preview/<file:path>', file=file)
@@ -66,7 +97,6 @@ def get_meta(file):
         'width': width,
         'height': height,
         'fps': fps,
-        'aspect': aspect,
         'encoding': encoding,
         'encoder': encoder,
         'bitrate': bitrate,
