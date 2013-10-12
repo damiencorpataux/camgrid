@@ -31,10 +31,11 @@ def get_meta():
 
 @app.route('/preview/<file:path>')
 @app.route('/preview/<file:path>/<time:int>')
-def get_preview(file, time=0):
+@app.route('/preview/<file:path>/<time:int>/<size>')
+def get_preview(file, time=0, size='160x120'):
     file = '/' + file
     if (not os.path.isfile(file)): abort(404, 'File %s does not exist' % file)
-    cmd = 'ffmpeg -i "%s" -vframes 1 -an -f image2 -s 640x480 -ss %s - 2>/dev/null' % (file, time)
+    cmd = 'ffmpeg -i "%s" -vframes 1 -an -f image2 -s %s -ss %s - 2>/dev/null' % (file, size, time)
     response.content_type = 'image/jpeg'
     return subprocess.check_output(cmd, shell=True)
 
