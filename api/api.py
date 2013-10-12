@@ -8,6 +8,9 @@ import os, subprocess
 import re, time
 from glob import glob
 
+# FIXME: Create a dedicated bottle app named 'api'
+#        and mount it in the 'viewer' app
+#        http://stackoverflow.com/questions/11180806/
 app = Bottle()
 
 c = config = {
@@ -16,10 +19,21 @@ c = config = {
     'motion': {}
 }
 
+# Testing json streaming
+# Streaming while parsing files could be a nice thing:
+# http://stackoverflow.com/questions/18994371/imitating-twitters-streaming-api
+@app.route('/stream')
+def stream():
+    import json
+    for i in range(5):
+        yield json.dumps([{'count':i}]) + "\n"
+        #yield {'count':i} # Unsupported response type: <type 'dict'>
+        time.sleep(1)
+
 @app.route('/')
 @view('app')
 def home():
-    return {} 
+    return
 
 @app.route('/static/<filename:path>')
 def send_static(filename):
@@ -85,7 +99,7 @@ def get_meta(file):
     cmd = 'avprobe "%s" 2>&1' % (file)
     output = subprocess.check_output(cmd, shell=True)
     print output
-    m = re.findall('encoder.*: (.*?)\n.*Duration: (.*?),.*bitrate: (.*)\n.*Video: (.*?), (.*?), (.*?)x(.*?).+, (.*?) fps', output, re.MULTILINE)
+    m = re.findall('encoder.*: (.*?)\n.*Duration: (.*?),.*bitrate: (.*)\n.*Video: (.*?), (.*?), (.*?)x(.*?), (.*?) fps', output, re.MULTILINE)
     if not m: raise Exception('File metadata parsing failed (%s)' % file)
     encoder, duration, bitrate, encoding, palette, width, height, fps = m.pop()
     h, m, s, c = re.findall('(\d{2}):(\d{2}):(\d{2})\.(\d{2})', duration).pop()
