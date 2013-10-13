@@ -10,10 +10,8 @@ import os, subprocess
 import re, time
 from glob import glob
 
-app = Bottle()
+app = bottle.app()
 app.mount("/api", api.app)
-
-bottle.TEMPLATES.clear()
 
 @app.route('/')
 @app.route('/live')
@@ -25,15 +23,21 @@ def home():
 @view('calendar')
 def calendar():
     return {
-        'calendarurl': api.get_url('/api/events')
+        'calendarurl': '/api'+api.app.get_url('/events')
     }
 
 @app.route('/timeline')
 @view('timeline')
 def timeline():
     return {
-        'url': api.app.get_url('/api/events')
+        'url': '/api'+api.app.get_url('/events')
     }
+
+@app.route('/play')
+@view('play')
+def timeline():
+    # Use the GNU flash flowplayer: http://flowplayer.org/
+    return {}
 
 @app.route('/static/<filename:path>')
 def send_static(filename):

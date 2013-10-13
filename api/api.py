@@ -9,7 +9,7 @@ from glob import glob
 # FIXME: API response must be streamed (yielding results)
 #        cf. stream() test
 
-app = Bottle()
+app = bottle.app()
 
 c = config = {
     'motionconf': '/etc/motion/motion.conf',
