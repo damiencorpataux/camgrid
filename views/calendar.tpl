@@ -143,16 +143,8 @@
                         });
                         $('#cboxLoadedContent').append(el);
                         $.colorbox.resize()
-                        // Creates preview sensor
-                        $('<div/>', {
-                            text: 'Mouse over to scroll',
-                            style: "background-color:#ffa",
-                            // FIXME: Use a simple jQuery slider
-                            mousemove: function() {
-                                console.log('mouseover!')
-                            }
-                        }).appendTo('#cboxLoadedContent');
-                        $.colorbox.resize()
+                        // FIXME: Creates preview sensor
+                        // Use a simple jQuery slider
                     }).fail(function() {
                         console.log('Metadata loading failed');
                     });
