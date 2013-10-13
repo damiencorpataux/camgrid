@@ -90,8 +90,9 @@
                                 id: e.file,
                                 title: e.text,
                                 start: e.timestamp,
+                                allDay: false,
                                 backgroundColor: colors[e.text.toLowerCase()],
-                                allDay: false
+                                preview: e.preview
                             }
                         });
                         callback(events)
@@ -99,10 +100,35 @@
                 },
                 eventClick: function(event, jsEvent){
                     // Display event detail in UI modal box
-                    //$("#appointment-form").dialog("open");
+                    //$("#appointment-form").dialog("open"); ?
+                    var html = $('<img/>', {
+                        src: event.preview,
+                        load: function() { $(this).colorbox.resize() },
+                        class: 'thumbnail'
+                    });
                     $.colorbox({
                         width: '80%',
-                        html:'Preview<img src="'+event.preview+'"/>'
+                        html: html
+                    });
+                    $.getJSON('/meta/'+event.id, {
+                    }).done(function(json) {
+                        // Filter data to display (ugly code here)
+                        data = {file:event.id};
+                        json = $.each(json, function(k,v) {
+                            if ($.inArray(k, ['duration','fps','resolution','bitrate']) != -1)
+                                data[k] = v;
+                        });
+                        console.log(data);
+                        // Creates DOM for data
+                        var el = $('<dl/>');
+                        $.each(data, function(k, v) {
+                            $('<dt/>', { text: k, style:'float:left' }).appendTo(el);
+                            $('<dd/>', { text: v }).appendTo(el);
+                        });
+                        $('#cboxLoadedContent').append(el);
+                        $.colorbox.resize()
+                    }).fail(function() {
+                        console.log('Metadata loading failed');
                     });
                 }
             });
