@@ -101,9 +101,24 @@
                 eventClick: function(event, jsEvent){
                     // Display event detail in UI modal box
                     //$("#appointment-form").dialog("open"); ?
+                    var i = 0; // FIXME: parse url to increment time param and get rid of this i
                     var html = $('<img/>', {
                         src: event.preview,
-                        load: function() { $(this).colorbox.resize() },
+                        load: function() {
+                            $(this).colorbox.resize();
+                            // Rotates preview
+                            var img = this;
+                            (function worker() {
+                                i = i + 2;
+                                var url = event.preview+'/'+i+'/640x480';
+                                console.log(url);
+                                $(img).src = url;
+                                setTimeout(worker, 1000);
+                            })();
+                        },
+                        error: function() {
+                            $(img).src = event.preview;
+                        },
                         class: 'thumbnail'
                     });
                     $.colorbox({
@@ -118,7 +133,6 @@
                             if ($.inArray(k, ['duration','fps','resolution','bitrate']) != -1)
                                 data[k] = v;
                         });
-                        console.log(data);
                         // Creates DOM for data
                         var el = $('<dl/>');
                         $.each(data, function(k, v) {
@@ -126,6 +140,16 @@
                             $('<dd/>', { text: v }).appendTo(el);
                         });
                         $('#cboxLoadedContent').append(el);
+                        $.colorbox.resize()
+                        // Creates preview sensor
+                        $('<div/>', {
+                            text: 'Mouse over to scroll',
+                            style: "background-color:#ffa",
+                            // FIXME: Use a simple jQuery slider
+                            mousemove: function() {
+                                console.log('mouseover!')
+                            }
+                        }).appendTo('#cboxLoadedContent');
                         $.colorbox.resize()
                     }).fail(function() {
                         console.log('Metadata loading failed');

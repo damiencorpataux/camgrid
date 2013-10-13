@@ -1,16 +1,10 @@
 import bottle
 from bottle import Bottle, run, debug
 from bottle import route, request, response, abort, error
-from bottle import view, template
-from bottle import static_file
 
 import os, subprocess
 import re, time
 from glob import glob
-
-# FIXME: Create a dedicated bottle app named 'api'
-#        and mount it in the 'viewer' app
-#        http://stackoverflow.com/questions/11180806/
 
 # FIXME: API response must be streamed (yielding results)
 #        cf. stream() test
@@ -36,30 +30,6 @@ def stream():
         yield json.dumps([{'count':i}]) + "\n"
         #yield {'count':i} # Unsupported response type: <type 'dict'>
         time.sleep(1)
-
-@app.route('/')
-@app.route('/live')
-@view('live')
-def home():
-    return
-
-@app.route('/calendar')
-@view('calendar')
-def calendar():
-    return {
-        'calendarurl': app.get_url('/events')
-    }
-
-@app.route('/timeline')
-@view('timeline')
-def timeline():
-    return {
-        'url': app.get_url('/events')
-    }
-
-@app.route('/static/<filename:path>')
-def send_static(filename):
-    return static_file(filename, root='static')
 
 @app.route('/config')
 def get_config():
@@ -154,7 +124,8 @@ def get_preview(file, time=0, size='160x120'):
     response.content_type = 'image/jpeg'
     return subprocess.check_output(cmd, shell=True)
 
-# FIXME: Use a flash play in client side?
+# FIXME: Use a flash play in client side? or stream html5-compliant mp4
+#        using ffmpeg to convert on-the-fly?
 @app.route('/play/<file:path>')
 def get_play(file):
     response.content_type = 'application/octet-stream'
@@ -176,6 +147,5 @@ def setup():
     for k,v in motion_conf().iteritems():
         if not c[k]: c[k] = v
 
-# Server instance
+# Module setup
 setup()
-run(app, host='0.0.0.0', port=8000, reloader=True)
