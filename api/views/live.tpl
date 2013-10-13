@@ -80,12 +80,6 @@
     </div>
 
     <script>
-      console = console || {
-          log: function() {},
-          debug: function() {},
-          info: function() {},
-          error: function() {}
-      }
       function list() {
           return $('#streams img').map(function() {
               return $(this).attr('src');
@@ -106,15 +100,12 @@
               // view parameters storage and retrieval
               // TODO: simply store list().append(url) ?
               //       and make list() return cookie contents ?
-              console.debug('adding URL to streams list');
               var sep = ' ';
               var streams = $.cookie('streams');
               streams = streams ? streams.split(sep) : [];
               streams.unshift(url);
-              console.debug('streams list updated to', streams);
               $.cookie('streams', streams.join(sep), {expires:365});
           // Creates and appends <img> tag
-          console.debug('creating img DOM');
           var a = $('<a/>', {
               href: url,
               // FIXME: lighter plugin doesn't work with hrefs not ending in .jpg|jpeg|png|...
@@ -123,7 +114,6 @@
           var img = $('<img/>', {
               src: url,
               load: function() { 
-                  console.debug('image loaded:', this.src)
                   // Relayouts gridly
                   // TODO: Refactor: these is the "layout" object that handles
                   // high-level layout related stuff (such as sizing, dragging, etc.)
@@ -141,7 +131,6 @@
                   */
               },
               error: function() {
-                  console.error('failed loading', this.src);
                   // Notifies user
                   // TODO: Add a 'remove (stream)' link in message
                   $.bootstrapGrowl("We cannot load this stream", {
@@ -156,12 +145,10 @@
           $('#streams').append(a.append(img));
       }
       function remove(url) {
-          console.debug('removing', url);
           // Removes from stream list cookie
           var streams = $(list()).map(function(i, u) {
               if (u !== url) return u;
           }).get();
-          console.debug('remaining streams', streams);
           $.cookie('streams', streams.join(' '));
           // Removes img tag
           $('#streams img[src="'+url+'"]').remove();
@@ -184,11 +171,9 @@
           });
 
           // Restores streams list on pageload (from cookie)
-          console.debug('restoring streams from cookie');
           var streams = $.cookie('streams');
           streams = streams ? streams.split(' ') : [];
           $.removeCookie('streams'); // Prevents add() duplicate detection
-          console.debug('restoring urls', streams);
           $.each(streams, function(i, url) {
               add(url);
           });
