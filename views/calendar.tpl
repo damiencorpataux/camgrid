@@ -103,12 +103,14 @@
                     //$("#appointment-form").dialog("open"); ?
                     var i = 0; // FIXME: parse url to increment time param and get rid of this i
                     var html = $('<img/>', {
-                        src: event.preview,
+                        src: '/api'+event.preview,
                         load: function() {
                             $(this).colorbox.resize();
+                            return;
                             // Rotates preview
                             var img = this;
                             (function worker() {
+                                return; //FIXME
                                 i = i + 2;
                                 var url = event.preview+'/'+i+'/640x480';
                                 console.log(url);
@@ -125,7 +127,7 @@
                         width: '80%',
                         html: html
                     });
-                    $.getJSON('/meta/'+event.id, {
+                    $.getJSON('/api/meta/'+event.id, {
                     }).done(function(json) {
                         // Filter data to display (ugly code here)
                         data = {file:event.id};
