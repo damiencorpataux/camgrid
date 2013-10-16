@@ -86,6 +86,7 @@
                             living: '#ddd',
                         }
                         var events = $.map(json.events, function(e) {
+                            e.preview = 'api'+e.preview;
                             return {
                                 id: e.file,
                                 title: e.text,
@@ -100,50 +101,67 @@
                 },
                 eventClick: function(event, jsEvent){
                     // Display event detail in UI modal box
-                    //$("#appointment-form").dialog("open"); ?
-                    var i = 0; // FIXME: parse url to increment time param and get rid of this i
-                    var html = $('<img/>', {
-                        src: '/api'+event.preview,
+                    // Config
+                    var resolution = '640x480',
+                        interval = 500, //ms
+                        step = 1; // seconds
+                    // Rendering
+                    var size = {
+                            w: resolution.split('x')[0],
+                            h: resolution.split('y')[1]
+                         },
+                         i = 0;
+                    var img = $('<img/>', {
+                        src: [event.preview, '0', resolution].join('/'),
+                        style: [
+                            'width:'+size.w+'px',
+                            'height:'+size.w+'px',
+                            'float:left; margin-right:10px'
+                        ].join(';'),
                         load: function() {
-                            $(this).colorbox.resize();
-                            return;
-                            // Rotates preview
-                            var img = this;
-                            (function worker() {
-                                return; //FIXME
-                                i = i + 2;
-                                var url = event.preview+'/'+i+'/640x480';
+                            // Rotates preview images
+                            setTimeout(function() {
+                                var url = [event.preview, i=i+step, resolution].join('/');
                                 console.log(url);
-                                $(img).src = url;
-                                setTimeout(worker, 1000);
-                            })();
+                                $(img).attr('src', url);
+                            }, 1000);
                         },
                         error: function() {
-                            $(img).src = event.preview;
+                            i = 0-step;
+                            img.load();
                         },
                         class: 'thumbnail'
                     });
                     $.colorbox({
                         width: '80%',
-                        html: html
+                        html: img
                     });
                     $.getJSON('/api/meta/'+event.id, {
+                        // Params
                     }).done(function(json) {
-                        // Filter data to display (ugly code here)
-                        data = {file:event.id};
-                        json = $.each(json, function(k,v) {
-                            if ($.inArray(k, ['duration','fps','resolution','bitrate']) != -1)
-                                data[k] = v;
-                        });
+                        // Defines which json keys to display and it's format
+                        var display = {
+                            file: event.id, // black sheep
+                            duration: '%s seconds',
+                            fps: '%s frames/seconds',
+                            resolution: '%s',
+                            bitrate: '%s',
+                            palette: '%s'
+                        };
                         // Creates DOM for data
                         var el = $('<dl/>');
-                        $.each(data, function(k, v) {
-                            $('<dt/>', { text: k, style:'float:left' }).appendTo(el);
-                            $('<dd/>', { text: v }).appendTo(el);
+                        $.each(display, function(k, v) {
+                            $('<dt/>', {
+                                text: k,
+                                style:'text-transform:capitalize'
+                            }).appendTo(el);
+                            $('<dd/>', {
+                                text: v.replace('%s', json[k]),
+                            }).appendTo(el);
                         });
                         $('#cboxLoadedContent').append(el);
                         $.colorbox.resize()
-                        // FIXME: Creates preview sensor
+                        // TODO: Creates preview sensor
                         // Use a simple jQuery slider
                     }).fail(function() {
                         console.log('Metadata loading failed');
