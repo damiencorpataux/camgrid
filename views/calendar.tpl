@@ -99,16 +99,31 @@
                         callback(events)
                     });
                 },
+                eventMouseover: function(event, jsEvent, view){
+                    var el = jsEvent.target;
+                    // qtip should not be applied at each hover?
+                    $(el).qtip({
+                        content: {
+                            text: $('<img/>', {src: event.preview})
+                        },
+                        overwrite: false,
+                        show: { ready: true }
+                    });
+                },
+                eventMouseout: function(event, jsEvent, view){
+                },
+                // Displays event detail in UI modal box
+                // TODO: <- and -> keys should rwd/ff 5 seconds (configurable)
                 eventClick: function(event, jsEvent){
-                    // Display event detail in UI modal box
                     // Config
-                    var interval = 100, //ms
-                        step = 1, // seconds
+                    var interval = 100, // rotation interval in ms
+                        step = 1, // rotation step in seconds
                         resolution = '640x480'; // not used yet
                     // Rendering
                     var i = 0;
                     var img = $('<img/>', {
-                        src: event.preview,
+                        src: event.preview, // we could set it to null
+                                            // and do $('<img/>', {}).load()
                         style: [
                             'float:left; margin-right:10px'
                         ].join(';'),
@@ -116,7 +131,6 @@
                             // Rotates preview images
                             setTimeout(function() {
                                 var url = [event.preview, i=i+step].join('/');
-                                console.log(url);
                                 $(img).attr('src', url);
                             }, 1000);
                         },
@@ -171,7 +185,7 @@
                 firstDay: 1,
                 defaultView: 'agendaWeek',
                 axisFormat: 'H:mm',
-                slotMinutes: 15,
+                slotMinutes: 20,
                 timeFormat: {
                     agenda: 'H:mm{ - H:mm}',
                     '': 'H(:mm)'
@@ -212,5 +226,8 @@
     <!-- ColorBox -->
     <script type="text/javascript" src="//cdn.jsdelivr.net/colorbox/1.4.4/jquery.colorbox-min.js"></script>
     <link href="//cdnjs.cloudflare.com/ajax/libs/jquery.colorbox/1.4.3/example1/colorbox.css " rel="stylesheet">
+    <!-- qTip2 -->
+    <script type="text/javascript" src="//cdn.jsdelivr.net/qtip2/2.1.1/basic/jquery.qtip.js"></script>
+    <link type="text/css" rel="stylesheet" href="//cdn.jsdelivr.net/qtip2/2.1.1/basic/jquery.qtip.css" />
   <body>
 </html>
