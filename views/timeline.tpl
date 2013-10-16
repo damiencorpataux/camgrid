@@ -73,7 +73,7 @@
                         'text': event.date
                     }).prepend([
                         $('<img/>', {
-                            src: event.preview
+                            src: '/api'+event.preview
                         })
                     ])
                 );

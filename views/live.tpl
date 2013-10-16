@@ -89,7 +89,7 @@
           // Prevents adding duplicate URLs
           var urls = list();
           if ($(urls).filter([url]).length) {
-              $.bootstrapGrowl("This stream has already been added", {
+              $.bootstrapGrowl("This stream has already been added: "+url, {
                   type: 'info',
                   align: 'center'
               });
@@ -133,7 +133,7 @@
               error: function() {
                   // Notifies user
                   // TODO: Add a 'remove (stream)' link in message
-                  $.bootstrapGrowl("We cannot load this stream", {
+                  $.bootstrapGrowl("We cannot load this stream: "+this.src, {
                       type: 'error',
                       align: 'center',
                       width: 'auto'

@@ -86,6 +86,7 @@
                             living: '#ddd',
                         }
                         var events = $.map(json.events, function(e) {
+                            e.preview = 'api'+e.preview;
                             return {
                                 id: e.file,
                                 title: e.text,
@@ -98,35 +99,78 @@
                         callback(events)
                     });
                 },
+                eventMouseover: function(event, jsEvent, view){
+                    var el = jsEvent.target;
+                    // qtip should not be applied at each hover?
+                    $(el).qtip({
+                        content: {
+                            text: $('<img/>', {src: event.preview})
+                        },
+                        overwrite: false,
+                        show: { ready: true }
+                    });
+                },
+                eventMouseout: function(event, jsEvent, view){
+                },
+                // Displays event detail in UI modal box
+                // TODO: <- and -> keys should rwd/ff 5 seconds (configurable)
                 eventClick: function(event, jsEvent){
-                    // Display event detail in UI modal box
-                    //$("#appointment-form").dialog("open"); ?
-                    var html = $('<img/>', {
-                        src: event.preview,
-                        load: function() { $(this).colorbox.resize() },
+                    // Config
+                    var interval = 100, // rotation interval in ms
+                        step = 1, // rotation step in seconds
+                        resolution = '640x480'; // not used yet
+                    // Rendering
+                    var i = 0;
+                    var img = $('<img/>', {
+                        src: event.preview, // we could set it to null
+                                            // and do $('<img/>', {}).load()
+                        style: [
+                            'float:left; margin-right:10px'
+                        ].join(';'),
+                        load: function() {
+                            // Rotates preview images
+                            setTimeout(function() {
+                                var url = [event.preview, i=i+step].join('/');
+                                $(img).attr('src', url);
+                            }, 1000);
+                        },
+                        error: function() {
+                            i = 0-step;
+                            img.load();
+                        },
                         class: 'thumbnail'
                     });
                     $.colorbox({
-                        width: '80%',
-                        html: html
+                        width: '100%',
+                        html: img
                     });
-                    $.getJSON('/meta/'+event.id, {
+                    $.getJSON('/api/meta/'+event.id, {
+                        // Params
                     }).done(function(json) {
-                        // Filter data to display (ugly code here)
-                        data = {file:event.id};
-                        json = $.each(json, function(k,v) {
-                            if ($.inArray(k, ['duration','fps','resolution','bitrate']) != -1)
-                                data[k] = v;
-                        });
-                        console.log(data);
+                        // Defines which json keys to display and it's format
+                        var display = {
+                            duration: '%s seconds',
+                            fps: '%s frames/seconds',
+                            resolution: '%s',
+                            bitrate: '%s',
+                            palette: '%s',
+                            file: event.id // black sheep
+                        };
                         // Creates DOM for data
                         var el = $('<dl/>');
-                        $.each(data, function(k, v) {
-                            $('<dt/>', { text: k, style:'float:left' }).appendTo(el);
-                            $('<dd/>', { text: v }).appendTo(el);
+                        $.each(display, function(k, v) {
+                            $('<dt/>', {
+                                text: k,
+                                style:'text-transform:capitalize'
+                            }).appendTo(el);
+                            $('<dd/>', {
+                                text: v.replace('%s', json[k]),
+                            }).appendTo(el);
                         });
                         $('#cboxLoadedContent').append(el);
                         $.colorbox.resize()
+                        // TODO: Creates preview sensor
+                        // Use a simple jQuery slider
                     }).fail(function() {
                         console.log('Metadata loading failed');
                     });
@@ -141,7 +185,7 @@
                 firstDay: 1,
                 defaultView: 'agendaWeek',
                 axisFormat: 'H:mm',
-                slotMinutes: 15,
+                slotMinutes: 20,
                 timeFormat: {
                     agenda: 'H:mm{ - H:mm}',
                     '': 'H(:mm)'
@@ -182,5 +226,8 @@
     <!-- ColorBox -->
     <script type="text/javascript" src="//cdn.jsdelivr.net/colorbox/1.4.4/jquery.colorbox-min.js"></script>
     <link href="//cdnjs.cloudflare.com/ajax/libs/jquery.colorbox/1.4.3/example1/colorbox.css " rel="stylesheet">
+    <!-- qTip2 -->
+    <script type="text/javascript" src="//cdn.jsdelivr.net/qtip2/2.1.1/basic/jquery.qtip.js"></script>
+    <link type="text/css" rel="stylesheet" href="//cdn.jsdelivr.net/qtip2/2.1.1/basic/jquery.qtip.css" />
   <body>
 </html>
