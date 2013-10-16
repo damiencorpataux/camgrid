@@ -13,7 +13,7 @@ from glob import glob
 app = bottle.app()
 
 # Mounts api app
-app.mount("/api", api.app)
+app.mount("/api/", api.app)
 # Merges mounted routes into root app, with mount prefix
 from copy import copy
 for route in api.app.routes:
@@ -33,7 +33,7 @@ def home():
 @view('calendar')
 def calendar():
     return {
-        'calendarurl': app.get_url('/api/events')
+        'calendarurl': app.get_url('api-events')
     }
 
 @app.route('/timeline')
