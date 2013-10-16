@@ -102,26 +102,20 @@
                 eventClick: function(event, jsEvent){
                     // Display event detail in UI modal box
                     // Config
-                    var resolution = '640x480',
-                        interval = 500, //ms
-                        step = 1; // seconds
+                    var interval = 100, //ms
+                        step = 1, // seconds
+                        resolution = '640x480'; // not used yet
                     // Rendering
-                    var size = {
-                            w: resolution.split('x')[0],
-                            h: resolution.split('y')[1]
-                         },
-                         i = 0;
+                    var i = 0;
                     var img = $('<img/>', {
-                        src: [event.preview, '0', resolution].join('/'),
+                        src: event.preview,
                         style: [
-                            'width:'+size.w+'px',
-                            'height:'+size.w+'px',
                             'float:left; margin-right:10px'
                         ].join(';'),
                         load: function() {
                             // Rotates preview images
                             setTimeout(function() {
-                                var url = [event.preview, i=i+step, resolution].join('/');
+                                var url = [event.preview, i=i+step].join('/');
                                 console.log(url);
                                 $(img).attr('src', url);
                             }, 1000);
@@ -133,7 +127,7 @@
                         class: 'thumbnail'
                     });
                     $.colorbox({
-                        width: '80%',
+                        width: '100%',
                         html: img
                     });
                     $.getJSON('/api/meta/'+event.id, {
@@ -141,12 +135,12 @@
                     }).done(function(json) {
                         // Defines which json keys to display and it's format
                         var display = {
-                            file: event.id, // black sheep
                             duration: '%s seconds',
                             fps: '%s frames/seconds',
                             resolution: '%s',
                             bitrate: '%s',
-                            palette: '%s'
+                            palette: '%s',
+                            file: event.id // black sheep
                         };
                         // Creates DOM for data
                         var el = $('<dl/>');
