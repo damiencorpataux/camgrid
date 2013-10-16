@@ -16,8 +16,7 @@ c = config = {
     # These options will be overriden by setup() if they are empty 
     'target_dir': None,
     'movie_filename': None,
-    # FIXME: This is to match my motion older file naming convention
-    'movie_filename': 'events/motion/%Y-%m/%Y-%m-%d/%Y-%m-%d %H-%M-%S - %C',
+    'movie_filename': None
 }
 
 # Testing json streaming
@@ -28,7 +27,7 @@ def stream():
     import json
     for i in range(5):
         yield json.dumps([{'count':i}]) + "\n"
-        #yield {'count':i} # Unsupported response type: <type 'dict'>
+        #yield [{'count':i}] # Unsupported response type: <type 'dict'>, same with <type 'list'> 
         time.sleep(1)
 
 @app.route('/config')
@@ -117,18 +116,22 @@ def get_meta(file):
 @app.route('/preview/<file:path>')
 @app.route('/preview/<file:path>/<time:int>')
 @app.route('/preview/<file:path>/<time:int>/<size>')
-def get_preview(file, time=0, size='160x120'):
+def get_preview(file, time=0, size=None):
     file = '/' + file
     if (not os.path.isfile(file)): abort(404, 'File %s does not exist' % file)
-    cmd = 'avconv -loglevel error -i "%s" -vframes 1 -an -f image2 -s %s -ss %s -' % (file, size, time)
-    response.content_type = 'image/jpeg'
+    cmd = 'avconv %s -loglevel error -vframes 1 -an -f image2 %s %s -' % (
+        '-i "%s"' % file,
+        '-ss %s' % time,
+        '-s %s' % size if size else '' # optional parameter
+    )
+    response.set_header('Content-Type', 'image/jpeg')
     return subprocess.check_output(cmd, shell=True)
 
 # FIXME: Use a flash play in client side? or stream html5-compliant mp4
 #        using ffmpeg to convert on-the-fly?
 @app.route('/play/<file:path>')
 def get_play(file):
-    response.content_type = 'application/octet-stream'
+    response.set_header('Content-Type', 'application/octet-stream')
     file = open(file, 'rb')
     while 1:
         chunk = file.read(4096)
