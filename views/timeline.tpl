@@ -60,7 +60,7 @@
 
       <script>
         $(document).ready(function() {
-            $.getJSON('{{url}}', {
+            $.getJSON('{{ get_url('/api/events') }}', {
                 dummydata: null
             }).done(function(json) {
                 draw(json.events.slice(0,10));

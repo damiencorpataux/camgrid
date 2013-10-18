@@ -78,7 +78,7 @@
             init_calendar({
                 editable: false,
                 events: function(start, end, callback) {
-                    $.getJSON('{{calendarurl}}', {
+                    $.getJSON('{{ get_url('/api/events') }}', {
                         start: Math.round(start.getTime() / 1000),
                         end: Math.round(end.getTime() / 1000)
                     }).done(function(json) {
