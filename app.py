@@ -1,34 +1,27 @@
+import os, subprocess
+import re, time
+from glob import glob
+
 import bottle
 from bottle import Bottle, run, debug
 from bottle import route, request, response, abort, error
 from bottle import BaseTemplate, view, template
 from bottle import static_file
 
+# Bottle application
+app = bottle.app()
+
+# Loads and mounts api app
+# FIXME: Mounted routes issue with app.get_url()
+#        The response object within mounted app does has no effect
+#        - try app.load_app() ?
 from api import api
-
-import os, subprocess
-import re, time
-from glob import glob
-
-app = bottle.default_app()
+app.mount("/api/", bottle.load_app('api.api:app'))
 
 # Makes get_url available to templates
 BaseTemplate.defaults['get_url'] = app.get_url
 
-# Mounts api app
-# FIXME: Mounted routes issue with app.get_url()
-#        The response object within mounted app does has no effect
-#        - try app.load_app() ?
-app.mount("/api/", api.app)
-# Merges mounted routes into root app, with mount prefix
-from copy import copy
-for route in api.app.routes:
-    r = copy(route)
-    r.rule = '/api'+r.rule
-    app.add_route(r)
-
-
-
+# Application methods
 @app.route('/')
 @app.route('/live')
 @view('live')
