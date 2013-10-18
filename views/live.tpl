@@ -55,25 +55,26 @@
     <div class="container">
 
       <div class="masthead">
-        <ul class="nav nav-pills pull-right">
+      <div>
+        <ul class="nav nav-pills pull-right" style="margin-top:17px">
           <li class="active"><a href="/">Live</a></li>
           <li><a href="/calendar">Calendar</a></li>
           <li><a href="/timeline">Timeline</a></li>
         </ul>
-        <h2>
-          Camgrid
+        <h2 style="display:inline-block">
+          Streams:
         </h2>
+        <form action="#" style="display:inline-block;margin:0">
+          <span class="input-append"> 
+            <input type="text" name="url" class="span6" placeholder="Stream URL, eg. http://pswebcam.bbhlabs.com:19910/mjpg/video.mjpg" value="http://pswebcam.bbhlabs.com:19910/mjpg/video.mjpg">
+            <button class="btn">Add</button>
+        <a class="action-remove-streams" href="#">Remove all streams</a>
+          </span>
+        </form>
       </div>
 
       <hr>
 
-      <form action="#">
-        <div class="input-append"> 
-          <input type="text" name="url" class="span8" placeholder="Stream URL, eg. http://pswebcam.bbhlabs.com:19910/mjpg/video.mjpg" value="http://pswebcam.bbhlabs.com:19910/mjpg/video.mjpg">
-          <button class="btn">Add</button>
-        </div>
-        <a class="action-remove-streams" href="#">Remove all streams</a>
-      </form>
       <div id="streams" class="gridly">
       </div>
 
@@ -203,25 +204,17 @@
     </script>
 
     <!-- Lighter -->
-    <script src="/static/js/jquery.lighter.js" type="text/javascript"></script>
-    <link href="http://ksylvest.github.io/jquery-lighter/stylesheets/jquery.lighter.css" rel="stylesheet" type="text/css" />
+    <script src="/static/js/jquery-lighter/jquery.lighter.js" type="text/javascript"></script>
+    <link href="//ksylvest.github.io/jquery-lighter/stylesheets/jquery.lighter.css" rel="stylesheet" type="text/css" />
     <!-- BootstrapGrowl -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-growl/1.0.0/jquery.bootstrap-growl.min.js" type="text/javascript"></script>
     <!-- Cookie -->
     <script src="//cdn.jsdelivr.net/jquery.cookie/1.3.1/jquery.cookie.js" type="text/javascript"></script>
-    <!-- Gridly -->
-    <script src="http://ksylvest.github.io/jquery-gridly/javascripts/jquery.gridly.js" type="text/javascript"></script>
-    <link href="http://ksylvest.github.io/jquery-gridly/stylesheets/jquery.gridly.css" rel="stylesheet" type="text/css" />
-    <style type="text/css">
-      .gridly { position: relative; width:100% }
-      .gridly > img { position: absolute }
-    </style>
     <!-- Shapeshifr -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.shapeshift/2.0/jquery.shapeshift.min.js" type="text/javascript"></script>
     <style type="text/css">
       .gridly {
         position: relative;
-        width: 95%;
       }
       .gridly > * {
         display: block;

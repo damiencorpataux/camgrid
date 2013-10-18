@@ -67,6 +67,9 @@
 
       <hr>
 
+      <div id="calendar-controls" class="pull-right">
+        <a href="#" onclick="$('#calendar').fullCalendar('refetchEvents')">Refresh</a>
+      </div>
       <div id="calendar"></div>
 
       <script>
@@ -84,6 +87,7 @@
                             sideway: '#cff',
                             backyard: '#cf0',
                             living: '#ddd',
+                            aziz: '#ddd',
                         }
                         var events = $.map(json.events, function(e) {
                             e.preview = 'api'+e.preview;
@@ -100,23 +104,36 @@
                     });
                 },
                 eventMouseover: function(event, jsEvent, view){
-                    var el = jsEvent.target;
                     // qtip should not be applied at each hover?
-                    $(el).qtip({
+                    var i = 0;
+                    $(jsEvent.target).qtip({
                         content: {
-                            text: $('<img/>', {src: event.preview})
+                            text: $('<img/>', {
+                                src: event.preview,
+                            }).on({
+                                load: function(e) {
+                                    var el = $(e.target),
+                                        url = [event.preview, i+=1].join('/');
+                                    if (el.is(':visible')) el.attr('src', url)
+                                },
+                                error: function(e) {
+                                    i = 0;
+                                    $(e.target).load();
+                                }
+                            })
                         },
-                        overwrite: false,
-                        show: { ready: true }
+                        show: {
+                            ready: true,
+                            solo: true
+                        }
                     });
-                },
-                eventMouseout: function(event, jsEvent, view){
                 },
                 // Displays event detail in UI modal box
                 // TODO: <- and -> keys should rwd/ff 5 seconds (configurable)
                 eventClick: function(event, jsEvent){
+                    $('.qtip').remove();
                     // Config
-                    var interval = 100, // rotation interval in ms
+                    var interval = 50, // rotation interval in ms
                         step = 1, // rotation step in seconds
                         resolution = '640x480'; // not used yet
                     // Rendering
@@ -124,21 +141,21 @@
                     var img = $('<img/>', {
                         src: event.preview, // we could set it to null
                                             // and do $('<img/>', {}).load()
+                        class: 'thumbnail',
                         style: [
                             'float:left; margin-right:10px'
                         ].join(';'),
                         load: function() {
                             // Rotates preview images
                             setTimeout(function() {
-                                var url = [event.preview, i=i+step].join('/');
+                                var url = [event.preview, i+=step].join('/');
                                 $(img).attr('src', url);
                             }, 1000);
                         },
                         error: function() {
                             i = 0-step;
                             img.load();
-                        },
-                        class: 'thumbnail'
+                        }
                     });
                     $.colorbox({
                         width: '100%',
