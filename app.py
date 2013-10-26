@@ -44,6 +44,6 @@ def timeline():
     # Use the GNU flash flowplayer: http://flowplayer.org/
     return {}
 
-@app.route('/static/<filename:path>')
+@app.route('/static/<filename:path>', name='static')
 def send_static(filename):
     return static_file(filename, root='static')

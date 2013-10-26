@@ -1,3 +1,6 @@
 [submodule "lib/bottle"]
 	path = lib/bottle
 	url = https://github.com/defnull/bottle.git
+[submodule "static/js/jquery-bootstrap-growl"]
+	path = static/js/jquery-bootstrap-growl
+	url = https://github.com/ifightcrime/bootstrap-growl.git

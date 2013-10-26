@@ -78,7 +78,14 @@
             init_calendar({
                 editable: false,
                 events: function(start, end, callback) {
-                    $.getJSON('{{ get_url('/api/events') }}', {
+                    var notification = $.bootstrapGrowl('Loading calendar...', {
+                        type: '',
+                        allow_dismiss: false,
+                        align: 'center',
+                        delay: 0
+                    });
+                    // FIXME: get_url('/api/events') or ('api-events') should work ?
+                    $.getJSON('{{ '/api/events' }}', {
                         start: Math.round(start.getTime() / 1000),
                         end: Math.round(end.getTime() / 1000)
                     }).done(function(json) {
@@ -90,7 +97,6 @@
                             aziz: '#ddd',
                         }
                         var events = $.map(json.events, function(e) {
-                            e.preview = 'api'+e.preview;
                             return {
                                 id: e.file,
                                 title: e.text,
@@ -100,7 +106,16 @@
                                 preview: e.preview
                             }
                         });
-                        callback(events)
+                        callback(events);
+                    }).fail(function() {
+                        $.bootstrapGrowl("We couldn't load events", {
+                            type: 'danger',
+                            align: 'center'
+                        });
+                    }).always(function() {
+                        notification.fadeOut(1000, function() {
+                            notification.alert('close');
+                        });
                     });
                 },
                 eventMouseover: function(event, jsEvent, view){
@@ -164,7 +179,7 @@
                     $.getJSON('/api/meta/'+event.id, {
                         // Params
                     }).done(function(json) {
-                        // Defines which json keys to display and it's format
+                        // Defines which json keys to display and its format
                         var display = {
                             duration: '%s seconds',
                             fps: '%s frames/seconds',
@@ -243,6 +258,8 @@
     <!-- ColorBox -->
     <script type="text/javascript" src="//cdn.jsdelivr.net/colorbox/1.4.4/jquery.colorbox-min.js"></script>
     <link href="//cdnjs.cloudflare.com/ajax/libs/jquery.colorbox/1.4.3/example1/colorbox.css " rel="stylesheet">
+    <!-- BootstrapGrowl -->
+    <script src="{{ get_url('static', filename='js/jquery-bootstrap-growl/jquery.bootstrap-growl.min.js') }}" type="text/javascript"></script>
     <!-- qTip2 -->
     <script type="text/javascript" src="//cdn.jsdelivr.net/qtip2/2.1.1/basic/jquery.qtip.js"></script>
     <link type="text/css" rel="stylesheet" href="//cdn.jsdelivr.net/qtip2/2.1.1/basic/jquery.qtip.css" />

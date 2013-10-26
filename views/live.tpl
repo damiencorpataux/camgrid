@@ -68,7 +68,6 @@
           <span class="input-append"> 
             <input type="text" name="url" class="span6" placeholder="Stream URL, eg. http://pswebcam.bbhlabs.com:19910/mjpg/video.mjpg" value="http://pswebcam.bbhlabs.com:19910/mjpg/video.mjpg">
             <button class="btn">Add</button>
-        <a class="action-remove-streams" href="#">Remove all streams</a>
           </span>
         </form>
       </div>
@@ -77,6 +76,9 @@
 
       <div id="streams" class="gridly">
       </div>
+
+      <hr>
+      <a class="action-remove-streams" href="#">Remove all streams</a>
 
     </div>
 
@@ -115,10 +117,7 @@
           var img = $('<img/>', {
               src: url,
               load: function() { 
-                  // Relayouts gridly
-                  // TODO: Refactor: these is the "layout" object that handles
-                  // high-level layout related stuff (such as sizing, dragging, etc.)
-                  //$('.gridly').gridly('layout');
+                  // Relayouts shapeshift
                   $('#streams').shapeshift();
                   // Restores resizable
                   /* Buggy with shapeshift
@@ -141,6 +140,9 @@
                   });
                   // Removes created DOM element
                   $(this).remove();
+                  // FIXME: Allow to remove stream from cookie,
+                  //        simply add a "Remove stream from list" link
+                  //        and let the growl be sticky (delay: 0)
               }
           });
           $('#streams').append(a.append(img));
@@ -179,19 +181,6 @@
               add(url);
           });
 
-          // Setups gridly on stream images list
-          /*
-          $('#streams').gridly({
-              base: 60, // px 
-              gutter: 5, // px
-              //columns: 4
-          });
-          */
-
-          // Setups shapeshiftable streams (masonry-like)
-          // FIXME: Not needed because called on every stream addition
-          //$('.gridly').shapeshift({ minColumns:3 });
-
           /*
           // Setups resizable streams
           // FIXME: Not needed because called on every stream addition
@@ -204,13 +193,13 @@
     </script>
 
     <!-- Lighter -->
-    <script src="/static/js/jquery-lighter/jquery.lighter.js" type="text/javascript"></script>
+    <script src=" {{ get_url('static', filename='js/jquery-lighter/jquery.lighter.js') }}" type="text/javascript"></script>
     <link href="//ksylvest.github.io/jquery-lighter/stylesheets/jquery.lighter.css" rel="stylesheet" type="text/css" />
     <!-- BootstrapGrowl -->
-    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-growl/1.0.0/jquery.bootstrap-growl.min.js" type="text/javascript"></script>
+    <script src="{{ get_url('static', filename='js/jquery-bootstrap-growl/jquery.bootstrap-growl.min.js') }}" type="text/javascript"></script>
     <!-- Cookie -->
     <script src="//cdn.jsdelivr.net/jquery.cookie/1.3.1/jquery.cookie.js" type="text/javascript"></script>
-    <!-- Shapeshifr -->
+    <!-- Shapeshift -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.shapeshift/2.0/jquery.shapeshift.min.js" type="text/javascript"></script>
     <style type="text/css">
       .gridly {
